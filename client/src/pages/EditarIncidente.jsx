@@ -95,9 +95,19 @@ export default function EditarIncidente() {
 
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
         try {
-            await axios.put(`http://localhost:3002/api/incidencias/${id}`, formData);
+            // Solo enviamos los campos editables
+            const dataToUpdate = {
+                titulo: formData.titulo,
+                descripcion: formData.descripcion,
+                estado: formData.estado,
+                residente_id: formData.residente_id,
+                empleado_asignado_id: tipoAsignacion === "empleado" ? formData.empleado_asignado_id : null,
+                empresa_proveedora_id: tipoAsignacion === "empresa" ? formData.empresa_proveedora_id : null
+            };
+            
+            await axios.put(`http://localhost:3002/api/incidencias/${id}`, dataToUpdate);
             navigate("/");
         } catch (error) {
             console.error("Error al actualizar la incidencia:", error);
@@ -122,194 +132,198 @@ export default function EditarIncidente() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center py-10 px-6">
         {/* Header */}
-        <header className="w-full max-w-2xl flex justify-between items-center mb-8">
-            <button
-            onClick={() => navigate("/")}
-            className="flex items-center px-4 py-2 text-gray-700 bg-white rounded-lg shadow hover:bg-gray-50 transition-colors"
-            >
-            <span className="mr-2">←</span>
-            Volver a incidencias
-            </button>
-            <h1 className="text-3xl font-bold text-gray-800">
-            Editar Incidencia
-            </h1>
+        <header className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate("/")}
+                        className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                        <span className="text-xl">←</span>
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800">
+                            Editar Incidencia
+                        </h1>
+                        <p className="text-gray-500 text-sm mt-1">
+                            Modifica los detalles de la incidencia #{id}
+                        </p>
+                    </div>
+                </div>
+            </div>
         </header>
 
         {/* Form */}
-        <div className="w-full max-w-2xl bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
+        <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200 p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="border-b border-gray-200 pb-4 mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Información de la Incidencia</h2>
+            </div>
             {/* Título */}
             <div>
-                <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-1">
-                Título
-            </label>
-            <input
-            type="text"
-            id="titulo"
-            name="titulo"
-            value={formData.titulo}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            required
-            />
+                <label htmlFor="titulo" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Título
+                </label>
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    value={formData.titulo}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                />
             </div>
 
           {/* Descripción */}
             <div>
-                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="descripcion" className="block text-sm font-semibold text-gray-700 mb-2">
                     Descripción
                 </label>
                 <textarea
-                id="descripcion"
-                name="descripcion"
-                rows="4"
-                value={formData.descripcion}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                required
+                    id="descripcion"
+                    name="descripcion"
+                    rows="4"
+                    value={formData.descripcion}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed resize-none"
                 ></textarea>
             </div>
 
             {/* Estado */}
             <div>
-                <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="estado" className="block text-sm font-semibold text-gray-700 mb-2">
                 Estado
                 </label>
                 <select
-                id="estado"
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    id="estado"
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 >
-                <option value="Pendiente">Pendiente</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Resuelto">Resuelto</option>
+                    <option value="Pendiente"> Pendiente</option>
+                    <option value="En Proceso"> En Proceso</option>
+                    <option value="Resuelto"> Resuelto</option>
                 </select>
             </div>
 
             {/* Residente */}
-<div>
-    <label htmlFor="residente_id" className="block text-sm font-medium text-gray-700 mb-1">
-        Residente *
-    </label>
-    <select
-        id="residente_id"
-        name="residente_id"
-        value={formData.residente_id}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-        required
-    >
-        <option value="">Seleccione un residente</option>
-        {residentes.map((residente) => (
-            <option key={residente.IdPropietario} value={residente.IdPropietario}>
-                {residente.Nombre}
-            </option>
-        ))}
-    </select>
-</div>
+            <div>
+                <label htmlFor="residente_nombre" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Residente
+                </label>
+                <input
+                    type="text"
+                    id="residente_nombre"
+                    value={residentes.find(r => r.IdPropietario === formData.residente_id)?.Nombre || 'Cargando...'}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                />
+            </div>
 
-{/* Tipo de Asignación */}
-<div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-        Asignar a
-    </label>
-    <div className="flex gap-4 mb-3">
-        <label className="flex items-center cursor-pointer">
-            <input
-                type="radio"
-                name="tipo_asignacion"
-                value="sin_asignar"
-                checked={tipoAsignacion === "sin_asignar"}
-                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
-                className="mr-2"
-            />
-            <span className="text-sm text-gray-700">Sin asignar</span>
-        </label>
-        <label className="flex items-center cursor-pointer">
-            <input
-                type="radio"
-                name="tipo_asignacion"
-                value="empleado"
-                checked={tipoAsignacion === "empleado"}
-                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
-                className="mr-2"
-            />
-            <span className="text-sm text-gray-700">Empleado</span>
-        </label>
-        <label className="flex items-center cursor-pointer">
-            <input
-                type="radio"
-                name="tipo_asignacion"
-                value="empresa"
-                checked={tipoAsignacion === "empresa"}
-                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
-                className="mr-2"
-            />
-            <span className="text-sm text-gray-700">Empresa Proveedora</span>
-        </label>
-    </div>
+            {/* Tipo de Asignación */}
+            <div className="border-t border-gray-200 pt-6 mt-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Asignar a
+                </label>
+                <div className="flex gap-4 mb-3">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="tipo_asignacion"
+                            value="sin_asignar"
+                            checked={tipoAsignacion === "sin_asignar"}
+                            onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                            className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Sin asignar</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="tipo_asignacion"
+                            value="empleado"
+                            checked={tipoAsignacion === "empleado"}
+                            onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                            className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Empleado</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="tipo_asignacion"
+                            value="empresa"
+                            checked={tipoAsignacion === "empresa"}
+                            onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                            className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Empresa Proveedora</span>
+                    </label>
+                </div>
 
-    {/* Select de Empleado */}
-    {tipoAsignacion === "empleado" && (
-        <select
-            id="empleado_asignado_id"
-            name="empleado_asignado_id"
-            value={formData.empleado_asignado_id}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            required
-        >
-            <option value="">Seleccione un empleado</option>
-            {empleados.map((empleado) => (
-                <option key={empleado.IdEmpleado} value={empleado.IdEmpleado}>
-                    {empleado.Nombres} {empleado.Apellidos} - {empleado.Cargo}
-                </option>
-            ))}
-        </select>
-    )}
+                {/* Select de Empleado */}
+                {tipoAsignacion === "empleado" && (
+                    <select
+                        id="empleado_asignado_id"
+                        name="empleado_asignado_id"
+                        value={formData.empleado_asignado_id}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        required
+                    >
+                        <option value="">Seleccione un empleado</option>
+                        {empleados.map((empleado) => (
+                            <option key={empleado.IdEmpleado} value={empleado.IdEmpleado}>
+                                {empleado.Nombres} {empleado.Apellidos} - {empleado.Cargo}
+                            </option>
+                        ))}
+                    </select>
+                )}
 
-    {/* Select de Empresa */}
-    {tipoAsignacion === "empresa" && (
-        <select
-            id="empresa_proveedora_id"
-            name="empresa_proveedora_id"
-            value={formData.empresa_proveedora_id}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            required
-        >
-            <option value="">Seleccione una empresa</option>
-            {empresas.map((empresa) => (
-                <option key={empresa.IdEmpresaProveedora} value={empresa.IdEmpresaProveedora}>
-                    {empresa.RazonSocial}
-                </option>
-            ))}
-        </select>
-    )}
-</div>
+                {/* Select de Empresa */}
+                {tipoAsignacion === "empresa" && (
+                    <select
+                        id="empresa_proveedora_id"
+                        name="empresa_proveedora_id"
+                        value={formData.empresa_proveedora_id}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        required
+                    >
+                        <option value="">Seleccione una empresa</option>
+                        {empresas.map((empresa) => (
+                            <option key={empresa.IdEmpresaProveedora} value={empresa.IdEmpresaProveedora}>
+                                {empresa.RazonSocial}
+                            </option>
+                        ))}
+                    </select>
+                )}
+            </div>
 
             {/* Botones */}
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-8">
                 <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="px-8 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
                 >
-                Cancelar
-            </button>
-            <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md"
+                >
                 Guardar cambios
-            </button>
+                </button>
             </div>
         </form>
         </div>
+        <footer className="mt-8 text-gray-500 text-sm text-center">
+            © {new Date().getFullYear()} Inmobiliaria Inmo — Todos los derechos reservados.
+        </footer>
     </div>
 );
 }
