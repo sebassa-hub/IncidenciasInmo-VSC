@@ -30,26 +30,31 @@ module.exports = {
     },
 
     postIncidencia: (req, res) => {
-    const { titulo, descripcion, estado = 'Pendiente', residente_nombre } = req.body;
+        const { titulo, descripcion, residente_id } = req.body;
 
-    // Validar datos requeridos
-    if (!titulo || !descripcion || !residente_nombre) {
-        return res.status(400).json({ 
-            error: "Faltan campos requeridos (titulo, descripcion, residente_nombre)" 
-        });
-    }
-
-    incidenciasModel.postIncidencia(titulo, descripcion, estado, residente_nombre, (err, result) => {
-        if(err){
-            res.status(500).json({ error: err.message});
-            return;
+        // Validar datos requeridos
+        if (!titulo || !descripcion || !residente_id) {
+            return res.status(400).json({ 
+                success: false,
+                error: "Faltan campos requeridos" 
+            });
         }
-        res.status(201).json({ 
-            message: 'Incidencia creada correctamente', 
-            data: { idInsertado: result }
+
+        incidenciasModel.postIncidencia(titulo, descripcion, residente_id, (err, result) => {
+            if(err){
+                res.status(500).json({ 
+                    success: false,
+                    error: err.message
+                });
+                return;
+            }
+            res.status(201).json({ 
+                success: true,
+                message: 'Incidencia creada correctamente', 
+                data: { idInsertado: result }
+            });
         });
-    });
-},
+    },
 
     putIncidencia : (req, res)=>{
         const { id } = req.params;
@@ -76,7 +81,7 @@ module.exports = {
             empleado_asignado_id: empleado_asignado_id || null,
             empresa_proveedora_id: empresa_proveedora_id || null
         };
-        
+
         incidenciasModel.putIncidencia(id, data, (err, result) => {
             if(err){
                 res.status(500).json({ error: err.message});

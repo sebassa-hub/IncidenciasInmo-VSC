@@ -2,6 +2,7 @@ import './App.css';
 import EditarIncidente from './pages/EditarIncidente';
 import ListaIncidencias from './pages/ListaIncidencias';
 import Login from './pages/Login';
+import RegistroIncidencias from './pages/RegistroIncidencias';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
@@ -18,6 +19,11 @@ function App() {
           <Route path="/" element={
             <ProtectedRoute>
               <ListaIncidencias />
+            </ProtectedRoute>
+            } />
+          <Route path="/registro-incidencia" element={
+            <ProtectedRoute>
+              <RegistroIncidencias/>
             </ProtectedRoute>
             } />
           <Route path="/editar-incidencia" element={

@@ -14,7 +14,6 @@ export default function Login() {
         event.preventDefault();
         setLoading(true);
 
-        // Cambia esta línea - usa la ruta correcta de InicioSesion
         axios.post('http://localhost:3002/api/iniciosesion/login', { 
             email: username,
             password: password 
@@ -26,15 +25,21 @@ export default function Login() {
                 localStorage.setItem('user', JSON.stringify(res.data.user));
                 localStorage.setItem('isAuthenticated', 'true');
                 
-                console.log('Login exitoso, usuario:', res.data.user.nombre);
+                console.log('Login exitoso, usuario:', res.data.user);
                 
                 // Mostrar animación de éxito
                 setUserName(res.data.user.nombre);
                 setShowSuccess(true);
                 
-                // Redirigir después de 2 segundos
+                // Redirigir según el rol después de 2 segundos
                 setTimeout(() => {
-                    navigate('/');
+                    if (res.data.user.rol === 'Administrador' || res.data.user.rol === 'ADMIN') {
+                        navigate('/'); // ListaIncidencias para admin
+                    } else if (res.data.user.rol === 'PROPIETARIO') {
+                        navigate('/registro-incidencia'); // RegistroIncidencias para propietario
+                    } else {
+                        navigate('/'); // Por defecto
+                    }
                 }, 2000);
             } else {
                 console.log('Login fallido:', res.data.message);
@@ -43,8 +48,7 @@ export default function Login() {
         })
         .catch(err => {
             console.error('Error en la petición:', err);
-            console.error('Detalles del error:', err.response?.data);
-            alert('Error al conectar con el servidor: ' + (err.response?.data?.message || err.message));
+            alert('Error al conectar con el servidor');
         })
         .finally(() => {
             setLoading(false);

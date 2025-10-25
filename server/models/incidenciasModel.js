@@ -49,11 +49,11 @@ class Incidencias {
     }
 
     //crear incidencia
-    postIncidencia(titulo, descripcion, estado, residente_nombre, callback) {
-        const sql = "insert into incidencia (titulo, descripcion, estado, residente_nombre) values (?, ?, ?, ?)";
-        db.query(sql, [titulo, descripcion, estado, residente_nombre], (err, result) => {
+    postIncidencia(titulo, descripcion, residente_id, callback){
+        const sql = "INSERT INTO incidencia (titulo, descripcion, estado, residente_id) VALUES (?, ?, 'Pendiente', ?)";
+        db.query(sql, [titulo, descripcion, residente_id], (err, result) => {
             if(err){
-                return callback(err,null);
+                return callback(err, null);
             }
             callback(null, result.insertId);
         });
