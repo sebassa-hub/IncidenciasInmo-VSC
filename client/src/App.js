@@ -2,7 +2,12 @@ import './App.css';
 import EditarIncidente from './pages/EditarIncidente';
 import ListaIncidencias from './pages/ListaIncidencias';
 import Login from './pages/Login';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('IsAuthenticated') === 'true';
+  return isAuthenticated ? children : <Navigate to="/Login" />;
+}
 
 function App() {
   return (
@@ -10,8 +15,16 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />}/>
-          <Route path="/" element={<ListaIncidencias />} />
-          <Route path="/editar-incidencia" element={<EditarIncidente />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <ListaIncidencias />
+            </ProtectedRoute>
+            } />
+          <Route path="/editar-incidencia" element={
+            <ProtectedRoute>
+              <EditarIncidente />
+            </ProtectedRoute>
+            } />
         </Routes>
       </BrowserRouter>
     </div>
