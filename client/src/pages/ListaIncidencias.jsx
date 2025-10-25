@@ -1,42 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function App() {
   const [busqueda, setBusqueda] = useState("");
+  const [incidencias, setIncidencias] = useState([]);
   const navigate = useNavigate();
 
-  const incidencias = [
-    {
-      id: 1,
-      area: "Piscina",
-      descripcion: "Fuga de agua en la bomba principal",
-      urgencia: "Inmediata",
-      prioridad: "Alta",
-      estado: "Pendiente",
-      responsable: "Carlos López",
-      fecha: "2025-10-10",
-    },
-    {
-      id: 2,
-      area: "Ascensor",
-      descripcion: "Ruido extraño al subir",
-      urgencia: "Normal",
-      prioridad: "Media",
-      estado: "En Proceso",
-      responsable: "María Torres",
-      fecha: "2025-10-09",
-    },
-    {
-      id: 3,
-      area: "Lobby",
-      descripcion: "Luz quemada en la entrada",
-      urgencia: "Programada",
-      prioridad: "Baja",
-      estado: "Resuelto",
-      responsable: "Sin asignar",
-      fecha: "2025-10-08",
-    },
-  ];
+  useEffect(() => {
+    const cargarIncidencias = async () => {
+      try {
+        const response = await axios.get("http://localhost:3002/api/incidencias");
+        console.log('Respuesta del servidor:', response.data);
+        const incidenciasData = response.data.data || [];
+        setIncidencias(Array.isArray(incidenciasData) ? incidenciasData : []);
+      } catch (error) {
+        console.error("Error al cargar las incidencias:", error);
+        setIncidencias([]); 
+      }
+    };
+    cargarIncidencias();
+  }, []);
 
   const estadoColor = (estado) => {
     switch (estado) {
@@ -53,7 +37,7 @@ export default function App() {
 
   const datosFiltrados = incidencias.filter((i) =>
     i.descripcion.toLowerCase().includes(busqueda.toLowerCase()) ||
-    i.area.toLowerCase().includes(busqueda.toLowerCase()) ||
+    i.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
     i.estado.toLowerCase().includes(busqueda.toLowerCase())
   );
 
@@ -79,12 +63,10 @@ export default function App() {
           <thead className="bg-blue-600 text-white">
             <tr>
               <th className="py-3 px-4 text-left">#</th>
-              <th className="py-3 px-4 text-left">Área</th>
+              <th className="py-3 px-4 text-left">Título</th>
               <th className="py-3 px-4 text-left">Descripción</th>
-              <th className="py-3 px-4 text-left">Urgencia</th>
-              <th className="py-3 px-4 text-left">Prioridad</th>
               <th className="py-3 px-4 text-left">Estado</th>
-              <th className="py-3 px-4 text-left">Responsable</th>
+              <th className="py-3 px-4 text-left">Residente</th>
               <th className="py-3 px-4 text-left">Fecha</th>
               <th className="py-3 px-4 text-center">Acciones</th>
             </tr>
@@ -97,10 +79,8 @@ export default function App() {
                   className="hover:bg-gray-50 transition-colors border-b border-gray-200"
                 >
                   <td className="py-3 px-4">{item.id}</td>
-                  <td className="py-3 px-4 font-medium text-gray-700">{item.area}</td>
+                  <td className="py-3 px-4 font-medium text-gray-700">{item.titulo}</td>
                   <td className="py-3 px-4 text-gray-600">{item.descripcion}</td>
-                  <td className="py-3 px-4">{item.urgencia}</td>
-                  <td className="py-3 px-4">{item.prioridad}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 text-sm font-semibold rounded-full ${estadoColor(
@@ -110,16 +90,32 @@ export default function App() {
                       {item.estado}
                     </span>
                   </td>
-                  <td className="py-3 px-4">{item.responsable}</td>
-                  <td className="py-3 px-4 text-gray-500">{item.fecha}</td>
+                  <td className="py-3 px-4">{item.residente_nombre}</td>
+                  <td className="py-3 px-4 text-gray-500">
+                    {new Date(item.fecha_creacion).toLocaleDateString()}
+                  </td>
                   <td className="py-3 px-4 flex justify-center gap-2">
                     <button
-                      onClick={() => navigate('/editar', { state: { id: item.id } })}
+                      onClick={() => navigate('/editar-incidencia', { state: { id: item.id } })}
                       className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 font-medium rounded-lg hover:bg-yellow-200 transition"
                     >
                       Editar
                     </button>
-                    <button className="px-3 py-1 text-sm bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition">
+                    <button 
+                      onClick={async () => {
+                        if(window.confirm('¿Estás seguro de eliminar esta incidencia?')) {
+                          try {
+                            await axios.delete(`http://localhost:3002/api/incidencias/${item.id}`);
+                            // Recargar la lista después de eliminar
+                            const response = await axios.get('http://localhost:3002/api/incidencias');
+                            setIncidencias(response.data.data || []);
+                          } catch (error) {
+                            console.error('Error al eliminar:', error);
+                          }
+                        }
+                      }}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition"
+                    >
                       Eliminar
                     </button>
                   </td>
@@ -128,7 +124,7 @@ export default function App() {
             ) : (
               <tr>
                 <td
-                  colSpan="9"
+                  colSpan="7"  // Actualizado para coincidir con el número de columnas
                   className="text-center py-6 text-gray-500 italic"
                 >
                   No se encontraron incidencias...

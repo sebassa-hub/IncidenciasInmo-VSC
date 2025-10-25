@@ -4,7 +4,7 @@ class Incidencias {
 
     //obtener incidencias
     getIncidencias(callback) {
-        const sql = "select * from incidencia";
+        const sql = "select id, titulo, descripcion, estado, fecha_creacion, residente_nombre from incidencia";
         db.query(sql, callback);
     }
 

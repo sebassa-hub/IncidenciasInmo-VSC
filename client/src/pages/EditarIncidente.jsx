@@ -1,131 +1,188 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
-function EditarIncidente() {
-const [formData, setFormData] = useState({
-    id: "INC-001", // Ejemplo de ID
-    titulo: "",
-    descripcion: "",
-    estado: "Pendiente",
-});
-const navigate = useNavigate();
+export default function EditarIncidente() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { id } = location.state || {};
 
-const handleChange = (e) => {
-    setFormData({
-    ...formData,
-    [e.target.name]: e.target.value,
+    const [formData, setFormData] = useState({
+        titulo: "",
+        descripcion: "",
+        estado: "Pendiente",
+        residente_nombre: ""
     });
-};
 
-const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Incidente actualizado correctamente ✅");
-    console.log("Datos enviados:", formData);
-};
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-return (
-    <>
-    <button
-        onClick={() => navigate('/')}
-        style={styles.backButton}
-        aria-label="Volver a la lista"
-    >
-        ← Volver a incidencias
-    </button>
-    <div style={styles.container}>
-    <h2 style={styles.title}>Editar Incidente</h2>
+    useEffect(() => {
+        const cargarIncidente = async () => {
+        console.log("ID recibido:", id);
+        try {
+            const response = await axios.get(`http://localhost:3002/api/incidencias/${id}`);
+            console.log("Respuesta del servidor:", response.data);
+            const incidente = response.data.data;
+        setFormData({
+            titulo: incidente.titulo,
+            descripcion: incidente.descripcion,
+            estado: incidente.estado,
+            residente_nombre: incidente.residente_nombre
+        });
+        setLoading(false);
+        } catch (error) {
+        console.error("Error al cargar la incidencia:", error);
+        setError("Error al cargar la incidencia. Por favor, intente de nuevo.");
+        setLoading(false);
+        }
+    };
 
-    <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>ID del incidente</label>
-        <input
+    if (id) {
+        cargarIncidente();
+    } else {
+        setLoading(false);
+        setError("No se proporcionó un ID de incidencia válido.");
+    }
+    }, [id]);
+
+    const handleChange = (e) => {
+        setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`http://localhost:3002/api/incidencias/${id}`, formData);
+            navigate("/");
+        } catch (error) {
+            console.error("Error al actualizar la incidencia:", error);
+            setError("Error al actualizar la incidencia. Por favor, intente de nuevo.");
+        }
+    };
+
+    if (loading) {
+        return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-xl text-gray-600">Cargando...</div>
+        </div>
+    );
+    }
+
+    if (error) {
+        return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-xl text-red-600">{error}</div>
+        </div>
+    );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
+        {/* Header */}
+        <header className="w-full max-w-2xl flex justify-between items-center mb-8">
+            <button
+            onClick={() => navigate("/")}
+            className="flex items-center px-4 py-2 text-gray-700 bg-white rounded-lg shadow hover:bg-gray-50 transition-colors"
+            >
+            <span className="mr-2">←</span>
+            Volver a incidencias
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800">
+            Editar Incidencia
+            </h1>
+        </header>
+
+        {/* Form */}
+        <div className="w-full max-w-2xl bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200 p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Título */}
+            <div>
+                <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-1">
+                Título
+            </label>
+            <input
             type="text"
-            name="id"
-            value={formData.id}
-            readOnly
-            style={styles.input}
-        />
-
-        <label style={styles.label}>Título</label>
-        <input
-            type="text"
+            id="titulo"
             name="titulo"
             value={formData.titulo}
             onChange={handleChange}
-            placeholder=""
-            style={styles.input}
-        />
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            required
+            />
+            </div>
 
-        <label style={styles.label}>Descripción</label>
-        <textarea
-            name="descripcion"
-            rows="4"
-            value={formData.descripcion}
-            onChange={handleChange}
-            placeholder=""
-            style={styles.textarea}
-        ></textarea>
+          {/* Descripción */}
+            <div>
+                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción
+                </label>
+                <textarea
+                id="descripcion"
+                name="descripcion"
+                rows="4"
+                value={formData.descripcion}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                required
+                ></textarea>
+            </div>
 
-        <label style={styles.label}>Estado</label>
-        <select
-            name="estado"
-            value={formData.estado}
-            onChange={handleChange}
-            style={styles.select}
-        >
-            <option value="Pendiente">Pendiente</option>
-            <option value="En proceso">En proceso</option>
-            <option value="Resuelto">Resuelto</option>
-        </select>
+            {/* Estado */}
+            <div>
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-1">
+                Estado
+                </label>
+                <select
+                id="estado"
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                >
+                <option value="Pendiente">Pendiente</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Resuelto">Resuelto</option>
+                </select>
+            </div>
 
-        <button type="submit" style={styles.button}>
-            Guardar cambios
-        </button>
-    </form>
+            {/* Residente */}
+            <div>
+                <label htmlFor="residente_nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                Residente
+                </label>
+                <input
+                type="text"
+                id="residente_nombre"
+                name="residente_nombre"
+                value={formData.residente_nombre}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                required
+                />
+            </div>
+
+            {/* Botones */}
+            <div className="flex justify-end space-x-4 pt-4">
+                <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                Cancelar
+            </button>
+            <button
+                type="submit"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                Guardar cambios
+            </button>
+            </div>
+        </form>
+        </div>
     </div>
-    </>
 );
 }
-
-const styles = {
-backButton: {
-    position: 'fixed',
-    top: '18px',
-    left: '18px',
-    backgroundColor: '#ff6b6b',
-    color: '#fff',
-    padding: '14px 20px',
-    fontSize: '18px',
-    fontWeight: '700',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 6px 18px rgba(0,0,0,0.18)',
-    zIndex: 1000,
-},
-container: {
-    maxWidth: "500px",
-    margin: "40px auto",
-    padding: "20px",
-    borderRadius: "10px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-    backgroundColor: "#fefefe",
-    fontFamily: "Arial, sans-serif",
-},
-title: { textAlign: "center", marginBottom: "20px" },
-form: { display: "flex", flexDirection: "column", gap: "10px" },
-label: { fontWeight: "bold" },
-input: { padding: "8px", borderRadius: "5px", border: "1px solid #ccc" },
-textarea: { padding: "8px", borderRadius: "5px", border: "1px solid #ccc" },
-select: { padding: "8px", borderRadius: "5px", border: "1px solid #ccc" },
-button: {
-    marginTop: "15px",
-    padding: "10px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-},
-};
-
-export default EditarIncidente;
