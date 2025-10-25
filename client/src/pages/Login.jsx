@@ -34,7 +34,7 @@ export default function Login() {
                 // Redirigir según el rol después de 2 segundos
                 setTimeout(() => {
                     if (res.data.user.rol === 'Administrador' || res.data.user.rol === 'ADMIN') {
-                        navigate('/'); // ListaIncidencias para admin
+                        navigate('/lista-incidencia'); // ListaIncidencias para admin
                     } else if (res.data.user.rol === 'PROPIETARIO') {
                         navigate('/registro-incidencia'); // RegistroIncidencias para propietario
                     } else {

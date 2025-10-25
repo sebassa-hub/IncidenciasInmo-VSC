@@ -15,8 +15,8 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />}/>
-          <Route path="/" element={
+          <Route path="/" element={<Login />}/>
+          <Route path="/lista-incidencia" element={
             <ProtectedRoute>
               <ListaIncidencias />
             </ProtectedRoute>
