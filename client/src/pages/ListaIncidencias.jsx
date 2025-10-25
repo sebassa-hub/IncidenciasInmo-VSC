@@ -42,33 +42,50 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center py-10 px-6">
       {/* ENCABEZADO */}
-      <header className="w-full max-w-6xl flex flex-col sm:flex-row sm:justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
-          🧾 Lista de Incidencias
-        </h1>
-        <input
-          type="text"
-          placeholder="Buscar incidencia..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full sm:w-72 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
-        />
+      <header className="w-full max-w-7xl bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+              Gestión de Incidencias
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Administra y da seguimiento a todas las incidencias reportadas
+            </p>
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar por título, descripción o estado..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full lg:w-96 px-5 py-3 pl-12 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
+            />
+            <svg 
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
       </header>
 
       {/* TABLA */}
-      <div className="w-full max-w-6xl bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        <table className="w-full border-collapse">
-          <thead className="bg-blue-600 text-white">
+      <div className="w-full max-w-7xl overflow-x-auto shadow-xl rounded-xl bg-white">
+        <table className="w-full border-collapse min-w-max">
+          <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
             <tr>
-              <th className="py-3 px-4 text-left">#</th>
-              <th className="py-3 px-4 text-left">Título</th>
-              <th className="py-3 px-4 text-left">Descripción</th>
-              <th className="py-3 px-4 text-left">Estado</th>
-              <th className="py-3 px-4 text-left">Residente</th>
-              <th className="py-3 px-4 text-left">Fecha</th>
-              <th className="py-3 px-4 text-center">Acciones</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Título</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Estado</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Residente</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">IDResidente</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Asignado a</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Fecha</th>
+              <th className="py-3 px-4 text-left whitespace-nowrap font-semibold border-r border-blue-500 last:border-r-0">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -76,12 +93,10 @@ export default function App() {
               datosFiltrados.map((item) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors border-b border-gray-200"
+                  className="hover:bg-blue-50 transition-colors border-b-2 border-gray-300"
                 >
-                  <td className="py-3 px-4">{item.id}</td>
-                  <td className="py-3 px-4 font-medium text-gray-700">{item.titulo}</td>
-                  <td className="py-3 px-4 text-gray-600">{item.descripcion}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0 font-medium text-gray-700">{item.titulo}</td>
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0">
                     <span
                       className={`px-3 py-1 text-sm font-semibold rounded-full ${estadoColor(
                         item.estado
@@ -90,11 +105,27 @@ export default function App() {
                       {item.estado}
                     </span>
                   </td>
-                  <td className="py-3 px-4">{item.residente_nombre}</td>
-                  <td className="py-3 px-4 text-gray-500">
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0">{item.residente_nombre}</td>
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0">{item.residente_id}</td>
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0">
+                    {item.empleado_nombre ? (
+                      <div>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Empleado</span>
+                        <div className="text-sm mt-1">{item.empleado_nombre}</div>
+                      </div>
+                    ) : item.empresa_proveedora_nombre ? (
+                      <div>
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Empresa</span>
+                        <div className="text-sm mt-1">{item.empresa_proveedora_nombre}</div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">Sin asignar</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0 text-gray-500">
                     {new Date(item.fecha_creacion).toLocaleDateString()}
                   </td>
-                  <td className="py-3 px-4 flex justify-center gap-2">
+                  <td className="py-3 px-4 border-r border-gray-300 last:border-r-0 flex justify-center gap-2">
                     <button
                       onClick={() => navigate('/editar-incidencia', { state: { id: item.id } })}
                       className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 font-medium rounded-lg hover:bg-yellow-200 transition"
@@ -136,7 +167,7 @@ export default function App() {
       </div>
 
       {/* FOOTER */}
-      <footer className="mt-10 text-gray-400 text-sm text-center">
+      <footer className="mt-12 text-gray-500 text-sm text-center">
         © {new Date().getFullYear()} Inmobiliaria Inmo — Todos los derechos reservados.
       </footer>
     </div>

@@ -11,8 +11,17 @@ export default function EditarIncidente() {
         titulo: "",
         descripcion: "",
         estado: "Pendiente",
-        residente_nombre: ""
+        residente_id: "",
+        empleado_asignado_id: "",
+        empresa_proveedora_id: ""
     });
+
+    // Estados adicionales para los select
+    const [residentes, setResidentes] = useState([]);
+    const [empleados, setEmpleados] = useState([]);
+    const [empresas, setEmpresas] = useState([]);
+    const [tipoAsignacion, setTipoAsignacion] = useState("sin_asignar"); // "sin_asignar", "empleado", "empresa"
+
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -24,12 +33,34 @@ export default function EditarIncidente() {
             const response = await axios.get(`http://localhost:3002/api/incidencias/${id}`);
             console.log("Respuesta del servidor:", response.data);
             const incidente = response.data.data;
+
+            const [resResidentes, resEmpleados, resEmpresas] = await Promise.all([
+                axios.get('http://localhost:3002/api/propietarios'),
+                axios.get('http://localhost:3002/api/empleados'),
+                axios.get('http://localhost:3002/api/empresas')
+            ]);
+
+            setResidentes(resResidentes.data.data || []);
+            setEmpleados(resEmpleados.data.data || []);
+            setEmpresas(resEmpresas.data.data || []);
+
+            // Determinar tipo de asignación
+            let tipo = "sin_asignar";
+            if (incidente.empleado_asignado_id) {
+                tipo = "empleado";
+            } else if (incidente.empresa_proveedora_id) {
+                tipo = "empresa";
+            }
+            setTipoAsignacion(tipo);
+
         setFormData({
             titulo: incidente.titulo,
             descripcion: incidente.descripcion,
             estado: incidente.estado,
-            residente_nombre: incidente.residente_nombre
-        });
+            residente_id: incidente.residente_id || "",
+            empleado_asignado_id: incidente.empleado_asignado_id || "",
+            empresa_proveedora_id: incidente.empresa_proveedora_id || ""
+            });
         setLoading(false);
         } catch (error) {
         console.error("Error al cargar la incidencia:", error);
@@ -52,6 +83,16 @@ export default function EditarIncidente() {
         [e.target.name]: e.target.value,
         });
     };
+
+    const handleTipoAsignacionChange = (tipo) => {
+        setTipoAsignacion(tipo);
+        setFormData({
+            ...formData,
+            empleado_asignado_id: tipo === "empleado" ? formData.empleado_asignado_id : "",
+            empresa_proveedora_id: tipo === "empresa" ? formData.empresa_proveedora_id : ""
+        });
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -150,20 +191,106 @@ export default function EditarIncidente() {
             </div>
 
             {/* Residente */}
-            <div>
-                <label htmlFor="residente_nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                Residente
-                </label>
-                <input
-                type="text"
-                id="residente_nombre"
-                name="residente_nombre"
-                value={formData.residente_nombre}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                required
-                />
-            </div>
+<div>
+    <label htmlFor="residente_id" className="block text-sm font-medium text-gray-700 mb-1">
+        Residente *
+    </label>
+    <select
+        id="residente_id"
+        name="residente_id"
+        value={formData.residente_id}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+        required
+    >
+        <option value="">Seleccione un residente</option>
+        {residentes.map((residente) => (
+            <option key={residente.IdPropietario} value={residente.IdPropietario}>
+                {residente.Nombre}
+            </option>
+        ))}
+    </select>
+</div>
+
+{/* Tipo de Asignación */}
+<div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+        Asignar a
+    </label>
+    <div className="flex gap-4 mb-3">
+        <label className="flex items-center cursor-pointer">
+            <input
+                type="radio"
+                name="tipo_asignacion"
+                value="sin_asignar"
+                checked={tipoAsignacion === "sin_asignar"}
+                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                className="mr-2"
+            />
+            <span className="text-sm text-gray-700">Sin asignar</span>
+        </label>
+        <label className="flex items-center cursor-pointer">
+            <input
+                type="radio"
+                name="tipo_asignacion"
+                value="empleado"
+                checked={tipoAsignacion === "empleado"}
+                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                className="mr-2"
+            />
+            <span className="text-sm text-gray-700">Empleado</span>
+        </label>
+        <label className="flex items-center cursor-pointer">
+            <input
+                type="radio"
+                name="tipo_asignacion"
+                value="empresa"
+                checked={tipoAsignacion === "empresa"}
+                onChange={(e) => handleTipoAsignacionChange(e.target.value)}
+                className="mr-2"
+            />
+            <span className="text-sm text-gray-700">Empresa Proveedora</span>
+        </label>
+    </div>
+
+    {/* Select de Empleado */}
+    {tipoAsignacion === "empleado" && (
+        <select
+            id="empleado_asignado_id"
+            name="empleado_asignado_id"
+            value={formData.empleado_asignado_id}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            required
+        >
+            <option value="">Seleccione un empleado</option>
+            {empleados.map((empleado) => (
+                <option key={empleado.IdEmpleado} value={empleado.IdEmpleado}>
+                    {empleado.Nombres} {empleado.Apellidos} - {empleado.Cargo}
+                </option>
+            ))}
+        </select>
+    )}
+
+    {/* Select de Empresa */}
+    {tipoAsignacion === "empresa" && (
+        <select
+            id="empresa_proveedora_id"
+            name="empresa_proveedora_id"
+            value={formData.empresa_proveedora_id}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            required
+        >
+            <option value="">Seleccione una empresa</option>
+            {empresas.map((empresa) => (
+                <option key={empresa.IdEmpresaProveedora} value={empresa.IdEmpresaProveedora}>
+                    {empresa.RazonSocial}
+                </option>
+            ))}
+        </select>
+    )}
+</div>
 
             {/* Botones */}
             <div className="flex justify-end space-x-4 pt-4">
