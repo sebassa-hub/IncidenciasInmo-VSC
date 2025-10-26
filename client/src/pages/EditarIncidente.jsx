@@ -108,7 +108,7 @@ export default function EditarIncidente() {
             };
             
             await axios.put(`http://localhost:3002/api/incidencias/${id}`, dataToUpdate);
-            navigate("/");
+            navigate("/lista-incidencia");
         } catch (error) {
             console.error("Error al actualizar la incidencia:", error);
             setError("Error al actualizar la incidencia. Por favor, intente de nuevo.");
@@ -307,7 +307,7 @@ export default function EditarIncidente() {
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-8">
                 <button
                     type="button"
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/lista-incidencia")}
                     className="px-8 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
                 >
                     Cancelar

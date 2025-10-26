@@ -37,25 +37,11 @@ export default function App() {
   };
 
   const generarPDF = () => {
-    // Cambiar a formato A4 con orientación horizontal para más espacio
     const doc = new jsPDF({
-      orientation: 'portrait', // o 'landscape' si prefieres horizontal
+      orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     });
-
-    const limpiarTexto = (texto) => {
-      if (!texto) return '';
-      return texto
-        .replace(/[^\x00-\x7F]/g, '')
-        .replace(/Ã³/g, 'o')
-        .replace(/Ã±/g, 'ñ')
-        .replace(/Ã©/g, 'e')
-        .replace(/Ã¡/g, 'a')
-        .replace(/Ãº/g, 'u')
-        .replace(/Ã­/g, 'i')
-        .trim();
-    };
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -307,7 +293,7 @@ export default function App() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="🔍 Buscar incidencia por título..."
+                placeholder="Buscar incidencia por título..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 className="w-full lg:w-96 px-5 py-3 pl-12 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
